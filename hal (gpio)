@@ -1,0 +1,12 @@
+class GPIO:
+    def __init__(self, pin, mode):
+        self.pin = pin
+        self.mode = mode
+        print(f"GPIO Pin {self.pin} initialized in {self.mode} mode.")
+
+    def write(self, value):
+        print(f"GPIO Pin {self.pin} set to {value}")
+
+    def read(self):
+        print(f"Reading GPIO Pin {self.pin}")
+        return 0
