@@ -1,6 +1,0 @@
-class SystemClock:
-    def __init__(self):
-        print("System Clock Configured.")
-
-    def configure(self):
-        print("System Clock Running.")
