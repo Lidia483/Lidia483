@@ -50,9 +50,9 @@
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
-uint16_t value_adc;
+uint32_t value_adc;
 uint32_t dac_value=0;
-char msg[10];
+char msg[1000];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -104,19 +104,22 @@ int main(void)
   HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 
 
+  //HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&value_adc, 1);
+  //HAL_UART_Receive_DMA(&huart2, (uint32_t*)&value_adc, 10);
+  // HAL_UART_Transmit_IT(&huart2, &value_adc, 10);
+
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-
   while (1)
   {
 	  HAL_ADC_Start(&hadc1);
-          HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+      HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
 	  value_adc = HAL_ADC_GetValue(&hadc1);
-	  sprintf(msg, "%hu\r\n", value_adc);
+	  sprintf(msg, "DAC: %lu\r\nADC: %lu\r\n", dac_value, value_adc); // @suppress("Float formatting support")
 	  HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-	  HAL_Delay(200);
+	  HAL_Delay(50);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -128,8 +131,10 @@ int main(void)
   	dac_value=0;
   }
 
-  HAL_Delay(500);
+  HAL_Delay(1);
   }
+
+
 
 
   /* USER CODE END 3 */
