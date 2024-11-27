@@ -40,7 +40,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MAX_VALUES 100
+#define MAX_VALUES 170
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -54,10 +54,11 @@
 uint32_t value_adc;
 uint32_t dac_value=0;
 uint32_t prad;
-char msg[1000];
-float x[MAX_VALUES];  // Tablica dla 100 wartości
-float y[MAX_VALUES];  // Tablica dla 100 wartości
-uint8_t liczba = 0;    // Zmienna śledząca aktualny indeks
+char msg[100];
+float x[MAX_VALUES];
+float y[MAX_VALUES];
+uint8_t i= 0;
+//float test = 2.32645;
 
 /* USER CODE END PV */
 
@@ -110,48 +111,53 @@ int main(void)
   HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED);
 
 
-  //HAL_ADC_Start_DMA(&hadc1, (uint32_t*)&value_adc, 1);
-  //HAL_UART_Receive_DMA(&huart2, (uint32_t*)&value_adc, 10);
-  // HAL_UART_Transmit_IT(&huart2, &value_adc, 10);
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  HAL_ADC_Start(&hadc1);
+
+
+
+for(i = 0; i <= MAX_VALUES; i++)
+{
+     HAL_ADC_Start(&hadc1);
       HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
 	  value_adc = HAL_ADC_GetValue(&hadc1);
-	  prad = value_adc / 47;
+	  prad = value_adc / 330;
 
 	    // Przypisz nowe wartości do tablic
-	    x[liczba] = prad;      // Dodaj wartość 'prad' do tablicy x
-	    y[liczba] = value_adc; // Dodaj wartość 'value_adc' do tablicy y
-	    size_t length = sizeof(x) / sizeof(x[0]);
+	    y[i] = prad;      // Dodaj wartość 'prad' do tablicy x
+	    x[i] = value_adc; // Dodaj wartość 'value_adc' do tablicy y
 
-	    liczba++;
-	        if (liczba >= MAX_VALUES) {
-	        	liczba = 0; // Resetuj indeks, gdy osiągniesz koniec tablicy
-	        }
+	   HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, dac_value);
+         if (dac_value < 4095) {
+  	     dac_value = dac_value + 15;
+       } else {
+     	dac_value=0;
+       }
+}
 
-	    TheilSenResult result = TheilSen_Estimate(x, y, length);
+HAL_Delay(100);
+	    //float x[] = {0, 1, 2, 3, 4};
+	    //float y[] = {1, 3, 5, 7, 9};
 
-	  sprintf(msg, "DAC: %lu\r\nADC: %lu\r\nPrad: %lu\r\nWyraz wolny: %fu\r\nNachylenie: %fu\r\n", dac_value, value_adc, prad, result.intercept, result.slope); // @suppress("Float formatting support")
-	  HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
-	  HAL_Delay(50);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
 
-  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, dac_value);
-  if (dac_value < 4095) {
-  	dac_value = dac_value + 10;
-  } else {
-  	dac_value=0;
-  }
+size_t dlugosc = sizeof(x) / sizeof(x[0]);
 
-  HAL_Delay(1);
+	    WynikTheilSena wynik = TheilSen_Estymator(x, y, dlugosc);
+
+	  sprintf(msg, "Wyraz wolny: %.5f\r\nNachylenie: %.5f\r\n", wynik.wyraz_wolny, wynik.nachylenie);// @suppress("Float formatting support")
+	  HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+	  HAL_Delay(200);
+
+
+
+
   }
 
 
