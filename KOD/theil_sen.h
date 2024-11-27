@@ -3,13 +3,13 @@
 
 #include <stddef.h> // Potrzebne dla typu size_t
 
-// Struktura przechowuj¹ca wynik estymacji
+// Struktura przechowujÄ…ca wynik estymacji
 typedef struct {
-    float slope;    // Nachylenie
-    float intercept; // Wyraz wolny
-} TheilSenResult;
+    float nachylenie;    // Nachylenie
+    float wyraz_wolny;   // Wyraz wolny
+} WynikTheilSena;
 
-// Funkcja obliczaj¹ca estymator Theil-Sen
-TheilSenResult TheilSen_Estimate(const float* x, const float* y, size_t length);
+// Funkcja obliczajÄ…ca estymator Theil-Sen
+WynikTheilSena TheilSen_Estymator(const float* x, const float* y, size_t dlugosc);
 
 #endif // THEIL_SEN_H
