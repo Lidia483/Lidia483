@@ -40,7 +40,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define MAX_VALUES 170
+#define MAX_VALUES 4096
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -52,12 +52,11 @@
 
 /* USER CODE BEGIN PV */
 uint32_t value_adc;
-uint32_t dac_value=0;
 uint32_t prad;
 char msg[100];
-float x[MAX_VALUES];
-float y[MAX_VALUES];
-uint8_t i= 0;
+uint32_t x[MAX_VALUES];
+uint32_t y[MAX_VALUES];
+uint32_t i= 0;
 //float test = 2.32645;
 
 /* USER CODE END PV */
@@ -119,30 +118,20 @@ int main(void)
   {
 
 
-
-for(i = 0, dac_value=0; i < MAX_VALUES; i++)
+for(i = 0; i < MAX_VALUES; i++)
 {
       HAL_ADC_Start(&hadc1);
       HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
-      HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, dac_value);
-         if (dac_value < 4095) {
-  	     dac_value = dac_value + 15;
-       } else {
-     	dac_value=0;
-       }
+      HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, i);
+
 	  value_adc = HAL_ADC_GetValue(&hadc1);
-	  prad = value_adc / 330;
 
-	    // Przypisz nowe wartości do tablic
-	    y[i] = prad;      // Dodaj wartość 'prad' do tablicy x
-	    x[i] = value_adc; // Dodaj wartość 'value_adc' do tablicy y
-
+	    y[i] = (float) value_adc / 330.0;
+	    x[i] = value_adc;
 
 }
 
 HAL_Delay(100);
-	    //float x[] = {0, 1, 2, 3, 4};
-	    //float y[] = {1, 3, 5, 7, 9};
 
     /* USER CODE END WHILE */
 
@@ -155,15 +144,7 @@ size_t dlugosc = sizeof(x) / sizeof(x[0]);
 	  sprintf(msg, "Wyraz wolny: %.5f\r\nNachylenie: %.5f\r\n", wynik.wyraz_wolny, wynik.nachylenie);// @suppress("Float formatting support")
 	  HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 	  HAL_Delay(200);
-
-
-
-
   }
-
-
-
-
   /* USER CODE END 3 */
 }
 
@@ -248,3 +229,4 @@ void assert_failed(char *file, uint32_t line)
 #endif /* USE_FULL_ASSERT */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
