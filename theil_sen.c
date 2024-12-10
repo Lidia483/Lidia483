@@ -1,65 +1,68 @@
 #include "theil_sen.h"
-#include <stdlib.h>
+#include "stdlib.h"
+#include "stddef.h"
+#include "stdint.h"
 
-static int compare_floats(const void* a, const void* b) {
-    float diff = (*(const float*)a - *(const float*)b);
-    return (diff > 0) - (diff < 0);
-}
+#define MAX_ELEMENTOW 2048
 
-static float median(float* arr, size_t length) {
-    qsort(arr, length, sizeof(float), compare_floats);
-    if (length % 2 == 0) {
-        return (arr[length / 2 - 1] + arr[length / 2]) / 2.0f;
-    } else {
-        return arr[length / 2];
-    }
-}
+	static int porownaj_floaty(const void* a, const void* b) {
+		float roznica = (*(const float*)a - *(const float*)b);
+		return (roznica > 0) - (roznica < 0);
+	}
 
-TheilSenResult TheilSen_Estimate(const float* x, const float* y, size_t length) {
-    if (length < 2) {
-        TheilSenResult error_result = {0.0f, 0.0f};
-        return error_result;
-    }
 
-    size_t num_pairs = (length * (length - 1)) / 2;
-    float* slopes = (float*)malloc(num_pairs * sizeof(float));
-    if (slopes == NULL) {
-        TheilSenResult error_result = {0.0f, 0.0f};
-        return error_result;
-    }
+	static float mediana(float* tablica, size_t dlugosc) {
+		qsort(tablica, dlugosc, sizeof(float), porownaj_floaty);
+		if (dlugosc % 2 == 0) {
+			return (tablica[dlugosc / 2 - 1] + tablica[dlugosc / 2]) / 2.0f;
+		} else {
+			return tablica[dlugosc / 2];
+		}
+	}
 
-    size_t index = 0;
-    for (size_t i = 0; i < length - 1; i++) {
-        for (size_t j = i + 1; j < length; j++) {
-            if (x[j] != x[i]) {
-                slopes[index++] = (y[j] - y[i]) / (x[j] - x[i]);
-            }
-        }
-    }
 
-    if (index == 0) {
-        free(slopes);
-        TheilSenResult error_result = {0.0f, 0.0f};
-        return error_result;
-    }
+	WynikTheilSena TheilSen_Estymator(const float* x, const float* y, size_t dlugosc, uint32_t* rzad) {
+		if (dlugosc < 2) {
+			WynikTheilSena wynik_bledu = {0.0f, 0.0f};
+			return wynik_bledu;
+		}
 
-    float slope_median = median(slopes, index);
-    free(slopes);
+		float nachylenia[MAX_ELEMENTOW];
+		float wyrazy_wolne[MAX_ELEMENTOW];
+		size_t indeks_nachylen = 0;
+		size_t indeks_wyrazow = 0;
 
-    float* intercepts = (float*)malloc(length * sizeof(float));
-    if (intercepts == NULL) {
-        TheilSenResult error_result = {slope_median, 0.0f};
-        return error_result;
-    }
 
-    for (size_t i = 0; i < length; i++) {
-        intercepts[i] = y[i] - slope_median * x[i];
-    }
+		for (size_t i = 0; i < dlugosc - 1; i++) {
+			for (size_t j = i + 1; j < dlugosc; j++) {
+				if (x[j][rzad] != x[i][rzad]) {
+					if (indeks_nachylen < MAX_ELEMENTOW) {
+						nachylenia[indeks_nachylen++] = (y[j][rzad] - y[i][rzad]) / (x[j][rzad] - x[i][rzad]);
+					} else {
+						break;
+					}
+				}
+			}
+			if (indeks_nachylen >= MAX_ELEMENTOW) break; // Przerwij główną pętlę
+		}
 
-    float intercept_median = median(intercepts, length);
-    free(intercepts);
+		if (indeks_nachylen == 0) {
+			WynikTheilSena wynik_bledu = {0.0f, 0.0f};
+			return wynik_bledu;
+		}
 
-    TheilSenResult result = {slope_median, intercept_median};
-    return result;
-}
+		float mediana_nachylenia = mediana(nachylenia, indeks_nachylen);
+
+
+		for (size_t i = 0; i < dlugosc; i++) {
+			if (indeks_wyrazow < MAX_ELEMENTOW) {
+				wyrazy_wolne[indeks_wyrazow++] = y[i][rzad] - mediana_nachylenia * x[i][rzad];
+			}
+		}
+
+		float mediana_wyrazu_wolnego = mediana(wyrazy_wolne, indeks_wyrazow);
+
+		WynikTheilSena wynik = {mediana_nachylenia, mediana_wyrazu_wolnego};
+		return wynik;
+	}
 
