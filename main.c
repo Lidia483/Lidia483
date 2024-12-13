@@ -30,7 +30,6 @@
 /* USER CODE BEGIN Includes */
 #include "string.h"
 #include "stdio.h"
-#include "stdint.h"
 #include "theil_sen.h"
 /* USER CODE END Includes */
 
@@ -54,10 +53,10 @@
 /* USER CODE BEGIN PV */
 uint32_t value_adc;
 uint32_t i;
-uint32_t rzad=0;
+uint32_t dane_wypelnione = 0;
 char msg[100];
-float x[MAX_VALUES][10];
-float y[MAX_VALUES][10];
+float x[MAX_VALUES];
+float y[MAX_VALUES];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -113,9 +112,9 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (rzad < 10)
+  while (1)
   {
-
+	  if (!dane_wypelnione) {
 
 	  for(i = 0; i < MAX_VALUES; i++)
 	  {
@@ -125,18 +124,17 @@ int main(void)
 	        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, i);
 	        value_adc = HAL_ADC_GetValue(&hadc1);
 
-	  	    x[i][rzad] = value_adc/300;
-	  	    y[i][rzad]= value_adc;
+	  	    x[i] = value_adc/300;
+	  	    y[i] = value_adc;
 
 
 	  }
 
+	  dane_wypelnione = 1; // Ustaw flagę, że dane zostały wypełnione
+	  }
+
 
 HAL_Delay(100);
-
-		/*float x[] = {1, 500, 2000, 2250, 2500};
-	    float y[] = {20, 21, 22, 110, 3500};*/
-
 
 
     /* USER CODE END WHILE */
@@ -145,14 +143,14 @@ HAL_Delay(100);
 
 size_t dlugosc = sizeof(x) / sizeof(x[0]);
 
-	    WynikTheilSena wynik = TheilSen_Estymator(x, y, dlugosc, rzad);
+	    WynikTheilSena wynik = TheilSen_Estymator(x, y, dlugosc);
 
-	  sprintf(msg, "Wyraz wolny: %.5f\r\nNachylenie: %.5f\r\n", wynik.wyraz_wolny, wynik.nachylenie);// @suppress("Float formatting support")
+	  sprintf(msg, "Wyraz wolny: %.2f\r\nNachylenie: %.2f\r\n", wynik.wyraz, wynik.nachylenie);// @suppress("Float formatting support")
 	  HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 	  HAL_Delay(200);
 
 
-rzad++;
+
 
   }
 
