@@ -6,10 +6,10 @@
 // Struktura przechowująca wynik estymacji
 typedef struct {
     float nachylenie;    // Nachylenie
-    float wyraz_wolny;   // Wyraz wolny
+    float wyraz;   // Wyraz wolny
 } WynikTheilSena;
 
 // Funkcja obliczająca estymator Theil-Sen
-WynikTheilSena TheilSen_Estymator(const float* x, const float* y, size_t dlugosc, uint32_t *rzad);
+WynikTheilSena TheilSen_Estymator(const float* x, const float* y, size_t dlugosc);
 
 #endif // THEIL_SEN_H
